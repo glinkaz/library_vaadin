@@ -1,7 +1,7 @@
 package com.example.application.views.library;
 
-import com.example.application.data.entity.SampleBook;
-import com.example.application.data.service.SampleBookService;
+import com.example.application.data.entity.Book;
+import com.example.application.data.service.BookService;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.Tag;
@@ -54,7 +54,7 @@ public class LibraryView extends LitTemplate implements HasStyle, BeforeEnterObs
     // (vaadin.com/designer)
 
     @Id
-    private Grid<SampleBook> grid;
+    private Grid<Book> grid;
 
     @Id
     private Upload image;
@@ -76,26 +76,26 @@ public class LibraryView extends LitTemplate implements HasStyle, BeforeEnterObs
     @Id
     private Button save;
 
-    private BeanValidationBinder<SampleBook> binder;
+    private BeanValidationBinder<Book> binder;
 
-    private SampleBook sampleBook;
+    private Book book;
 
-    private SampleBookService sampleBookService;
+    private BookService bookService;
 
-    public LibraryView(@Autowired SampleBookService sampleBookService) {
-        this.sampleBookService = sampleBookService;
+    public LibraryView(@Autowired BookService bookService) {
+        this.bookService = bookService;
         addClassNames("library-view", "flex", "flex-col", "h-full");
-        TemplateRenderer<SampleBook> imageRenderer = TemplateRenderer
-                .<SampleBook>of("<img style='height: 64px' src='[[item.image]]' />")
-                .withProperty("image", SampleBook::getImage);
+        TemplateRenderer<Book> imageRenderer = TemplateRenderer
+                .<Book>of("<img style='height: 64px' src='[[item.image]]' />")
+                .withProperty("image", Book::getImage);
         grid.addColumn(imageRenderer).setHeader("Image").setWidth("68px").setFlexGrow(0);
 
-        grid.addColumn(SampleBook::getName).setHeader("Name").setAutoWidth(true);
-        grid.addColumn(SampleBook::getAuthor).setHeader("Author").setAutoWidth(true);
-        grid.addColumn(SampleBook::getPublicationDate).setHeader("Publication Date").setAutoWidth(true);
-        grid.addColumn(SampleBook::getPages).setHeader("Pages").setAutoWidth(true);
-        grid.addColumn(SampleBook::getIsbn).setHeader("Isbn").setAutoWidth(true);
-        grid.setItems(query -> sampleBookService.list(
+        grid.addColumn(Book::getName).setHeader("Name").setAutoWidth(true);
+        grid.addColumn(Book::getAuthor).setHeader("Author").setAutoWidth(true);
+        grid.addColumn(Book::getPublicationDate).setHeader("Publication Date").setAutoWidth(true);
+        grid.addColumn(Book::getPages).setHeader("Pages").setAutoWidth(true);
+        grid.addColumn(Book::getIsbn).setHeader("Isbn").setAutoWidth(true);
+        grid.setItems(query -> bookService.list(
                 PageRequest.of(query.getPage(), query.getPageSize(), VaadinSpringDataHelpers.toSpringDataSort(query)))
                 .stream());
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
@@ -112,7 +112,7 @@ public class LibraryView extends LitTemplate implements HasStyle, BeforeEnterObs
         });
 
         // Configure Form
-        binder = new BeanValidationBinder<>(SampleBook.class);
+        binder = new BeanValidationBinder<>(Book.class);
 
         // Bind fields. This where you'd define e.g. validation rules
         binder.forField(pages).withConverter(new StringToIntegerConverter("Only numbers are allowed")).bind("pages");
@@ -128,13 +128,13 @@ public class LibraryView extends LitTemplate implements HasStyle, BeforeEnterObs
 
         save.addClickListener(e -> {
             try {
-                if (this.sampleBook == null) {
-                    this.sampleBook = new SampleBook();
+                if (this.book == null) {
+                    this.book = new Book();
                 }
-                binder.writeBean(this.sampleBook);
-                this.sampleBook.setImage(imagePreview.getSrc());
+                binder.writeBean(this.book);
+                this.book.setImage(imagePreview.getSrc());
 
-                sampleBookService.update(this.sampleBook);
+                bookService.update(this.book);
                 clearForm();
                 refreshGrid();
                 Notification.show("SampleBook details stored.");
@@ -149,7 +149,7 @@ public class LibraryView extends LitTemplate implements HasStyle, BeforeEnterObs
     public void beforeEnter(BeforeEnterEvent event) {
         Optional<Integer> sampleBookId = event.getRouteParameters().getInteger(SAMPLEBOOK_ID);
         if (sampleBookId.isPresent()) {
-            Optional<SampleBook> sampleBookFromBackend = sampleBookService.get(sampleBookId.get());
+            Optional<Book> sampleBookFromBackend = bookService.get(sampleBookId.get());
             if (sampleBookFromBackend.isPresent()) {
                 populateForm(sampleBookFromBackend.get());
             } else {
@@ -190,9 +190,9 @@ public class LibraryView extends LitTemplate implements HasStyle, BeforeEnterObs
         populateForm(null);
     }
 
-    private void populateForm(SampleBook value) {
-        this.sampleBook = value;
-        binder.readBean(this.sampleBook);
+    private void populateForm(Book value) {
+        this.book = value;
+        binder.readBean(this.book);
         this.imagePreview.setVisible(value != null);
         if (value == null) {
             this.imagePreview.setSrc("");

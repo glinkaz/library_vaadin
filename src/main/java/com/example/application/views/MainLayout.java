@@ -3,7 +3,9 @@ package com.example.application.views;
 import com.example.application.data.entity.User;
 import com.example.application.security.AuthenticatedUser;
 import com.example.application.views.createcount.CreateCountView;
+import com.example.application.views.library.AddBookView;
 import com.example.application.views.library.LibraryView;
+import com.example.application.views.library.NewLibraryView;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.avatar.Avatar;
@@ -118,6 +120,10 @@ public class MainLayout extends AppLayout {
     private List<RouterLink> createLinks() {
         MenuItemInfo[] menuItems = new MenuItemInfo[]{ //
                 new MenuItemInfo("Library", "la la-columns", LibraryView.class), //
+
+                new MenuItemInfo("NewLibrary", "la la-columns", NewLibraryView.class), //
+
+                new MenuItemInfo("Add Book", "la la-columns", AddBookView.class), //
 
                 new MenuItemInfo("Create Count", "la la-user", CreateCountView.class), //
 

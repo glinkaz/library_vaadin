@@ -2,11 +2,17 @@ package com.example.application.data.entity;
 
 import com.example.application.data.AbstractEntity;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.Lob;
+import javax.persistence.ManyToMany;
 
-@Entity
-public class SampleBook extends AbstractEntity {
+@Entity(name = "books")
+public class Book extends AbstractEntity {
 
     @Lob
     private String image;
@@ -15,6 +21,32 @@ public class SampleBook extends AbstractEntity {
     private LocalDate publicationDate;
     private Integer pages;
     private String isbn;
+
+    @ManyToMany(
+            cascade = {CascadeType.MERGE, CascadeType.PERSIST}
+    )
+    @JoinTable(
+            name = "books_tags",
+            joinColumns = @JoinColumn(name = "book_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    private Set<Tag> tags = new HashSet<>();
+
+    public void addTag(Tag tag){
+        this.tags.add(tag);
+        tag.books.add(this);
+    }
+
+    public void remove(Tag tag){
+        this.tags.remove(tag);
+        tag.books.remove(this);
+    }
+    //czy pożyczona i komu
+    //gdzie sie znajduje
+    //uzytkownik ma biblioteke jedna
+    //adm wyświetla liste uzytownikow
+    //user dodaje, usuwa i edytuje ksiązki, wyszukuje po tagach itp
+    //czy czytami na której stronie jestesmy
 
     public String getImage() {
         return image;
