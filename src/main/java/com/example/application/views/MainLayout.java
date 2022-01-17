@@ -4,8 +4,6 @@ import com.example.application.data.entity.User;
 import com.example.application.security.AuthenticatedUser;
 import com.example.application.views.createcount.CreateCountView;
 import com.example.application.views.library.AddBookView;
-import com.example.application.views.library.FilterLibraryView;
-import com.example.application.views.library.LibraryView;
 import com.example.application.views.library.NewLibraryView;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.applayout.AppLayout;

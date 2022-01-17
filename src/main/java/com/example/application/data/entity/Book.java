@@ -95,4 +95,17 @@ public class Book extends AbstractEntity {
     public void setBorrowed(String borrowed) {
         this.borrowed = borrowed;
     }
+
+    @Override
+    public String toString() {
+        return "Book{" +
+                ", name='" + name + '\'' +
+                ", author='" + author + '\'' +
+                ", publicationDate=" + publicationDate +
+                ", pages=" + pages +
+                ", isbn='" + isbn + '\'' +
+                ", borrowed='" + borrowed + '\'' +
+                ", tags='" + tags + '\'' +
+                '}';
+    }
 }

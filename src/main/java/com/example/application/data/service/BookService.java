@@ -3,11 +3,14 @@ package com.example.application.data.service;
 import com.example.application.data.entity.Book;
 import java.util.List;
 import java.util.Optional;
+
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class BookService {
 
@@ -22,6 +25,15 @@ public class BookService {
     }
 
     public Book update(Book entity) {
+        log.info("Update book - " + entity.getName());
+        return bookRepository.save(entity);
+    }
+
+    public Book save(Book entity) {
+        //if exists - dont update book
+//        if (bookRepository.exists(entity)){
+//            throw new IllegalArgumentException("Book exists in library");
+//        }
         return bookRepository.save(entity);
     }
 

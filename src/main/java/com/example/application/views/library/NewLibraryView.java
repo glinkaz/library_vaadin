@@ -30,16 +30,17 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.spring.data.VaadinSpringDataHelpers;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import javax.annotation.security.PermitAll;
 import java.util.List;
 import java.util.Objects;
 
-
+@Slf4j
 @PageTitle("NewLibrary")
 @Route(value = "library/:bookID?/:action?(edit)", layout = MainLayout.class)
-@RouteAlias(value = "library", layout = MainLayout.class)
+@RouteAlias(value = "", layout = MainLayout.class)
 @PermitAll
 @Tag("new-library-view")
 @JsModule("./views/library/new-library-view.ts")
@@ -76,7 +77,9 @@ public class NewLibraryView extends LitTemplate implements HasStyle, BeforeEnter
         Grid.Column<Book> editColumn = grid.addComponentColumn(person -> {
             Button editButton = new Button("Edit");
             editButton.addClickListener(e -> {
+                log.warn("Clicked edit button - " + person.getName());
                 if (editor.isOpen())
+                    log.info("Open another editor");
                     editor.cancel();
                 grid.getEditor().editItem(person);
             });
@@ -112,11 +115,11 @@ public class NewLibraryView extends LitTemplate implements HasStyle, BeforeEnter
         borrowedComboBox.setItems("All", "Borrowed", "Not Borrowed");
         grid.setItems(books).addFilter(book -> {
 
-            if (Objects.equals(borrowedComboBox.getValue(), "Borrowed")){
-                return Objects.equals(book.getBorrowed(), "");
+            if (Objects.equals(borrowedComboBox.getValue(), "Not Borrowed")){
+                return book.getBorrowed() == null || book.getBorrowed().isEmpty() || book.getBorrowed().isBlank();
             }
-            else if(Objects.equals(borrowedComboBox.getValue(), "Not Borrowed")){
-                return !Objects.equals(book.getBorrowed(), "");
+            else if(Objects.equals(borrowedComboBox.getValue(), "Borrowed")){
+                return book.getBorrowed() != null && !book.getBorrowed().isEmpty() && !book.getBorrowed().isBlank();
             }else{
                 return true;
             }
@@ -141,11 +144,11 @@ public class NewLibraryView extends LitTemplate implements HasStyle, BeforeEnter
             boolean matchesIsbn = matchesTerm(book.getIsbn(), searchTerm);
             boolean matchesPublicationDate = matchesTerm(book.getPublicationDate().toString(), searchTerm);
             boolean matchesPages = matchesTerm(book.getPages().toString(), searchTerm);
-//            boolean matchesBorrowed = matchesTerm(book.getBorrowed(), searchTerm);
-//            boolean matchesTags = matchesTerm(book.getTags(), searchTerm);
+            boolean matchesBorrowed = matchesTerm(book.getBorrowed(), searchTerm);
+            boolean matchesTags = matchesTerm(book.getTags(), searchTerm);
 
-            return matchesName || matchesAuthor || matchesIsbn || matchesPublicationDate || matchesPages;
-//                    || matchesBorrowed || matchesTags;
+            return matchesName || matchesAuthor || matchesIsbn || matchesPublicationDate || matchesPages
+                    || matchesBorrowed || matchesTags;
 
         });
 
@@ -158,6 +161,8 @@ public class NewLibraryView extends LitTemplate implements HasStyle, BeforeEnter
         borrowedField.setWidthFull();
         binder.forField(borrowedField)
                 .bind(Book::getBorrowed, Book::setBorrowed);
+        borrowedField.getValue();
+        //Book -> wstawić do booka warośc borrower -> updateuj booka z nową wartością borrower
         borrowedColumn.setEditorComponent(borrowedField);
 
         TextField tagsField = new TextField();
@@ -166,9 +171,21 @@ public class NewLibraryView extends LitTemplate implements HasStyle, BeforeEnter
                 .bind(Book::getTags, Book::setTags);
         tagsColumn.setEditorComponent(tagsField);
 
-        Button saveButton = new Button("Save", e -> editor.save());
-        Button cancelButton = new Button(VaadinIcon.CLOSE.create(),
-                e -> editor.cancel());
+        Button saveButton = new Button("Save", e -> {
+            log.info("Zuzia - editor - " + editor.getItem().getBorrowed());
+            Book saveBook = editor.getItem();
+            saveBook.setBorrowed(borrowedField.getValue());
+            log.info("Zuzia - Save button - " + borrowedField.getValue());
+            bookService.update(saveBook);
+            log.info("Zuzia - New Book object - " + saveBook.toString());
+            editor.save();
+            refreshGrid();
+//            log.info("editor - " + editor.getItem().getBorrowed());
+        });
+        Button cancelButton = new Button(VaadinIcon.CLOSE.create(), e -> {
+            editor.cancel();
+            log.info("Zuzia - Canel button ");
+        });
         cancelButton.addThemeVariants(ButtonVariant.LUMO_ICON,
                 ButtonVariant.LUMO_ERROR);
         HorizontalLayout actions = new HorizontalLayout(saveButton,
@@ -181,7 +198,8 @@ public class NewLibraryView extends LitTemplate implements HasStyle, BeforeEnter
 
 
     private boolean matchesTerm(String value, String searchTerm) {
-        return value.toLowerCase().contains(searchTerm.toLowerCase());
+        String v = value == null ? "" : value;
+        return v.toLowerCase().contains(searchTerm.toLowerCase());
     }
 
     @Override

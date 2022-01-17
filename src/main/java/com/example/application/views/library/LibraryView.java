@@ -45,7 +45,7 @@ import org.springframework.web.util.UriUtils;
 
 @PageTitle("Library")
 @Route(value = "hello/:sampleBookID?/:action?(edit)", layout = MainLayout.class)
-@RouteAlias(value = "", layout = MainLayout.class)
+@RouteAlias(value = "old-library", layout = MainLayout.class)
 @PermitAll
 @Tag("library-view")
 @JsModule("./views/library/library-view.ts")
