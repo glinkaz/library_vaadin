@@ -2,10 +2,8 @@ package com.example.application.data.generator;
 
 import com.example.application.data.Role;
 import com.example.application.data.entity.Book;
-import com.example.application.data.entity.Tag;
 import com.example.application.data.entity.User;
 import com.example.application.data.service.BookRepository;
-import com.example.application.data.service.TagRepository;
 import com.example.application.data.service.UserRepository;
 import com.vaadin.exampledata.DataType;
 import com.vaadin.exampledata.ExampleDataGenerator;
@@ -25,10 +23,11 @@ public class DataGenerator {
 
     @Bean
     public CommandLineRunner loadData(PasswordEncoder passwordEncoder, BookRepository bookRepository,
-                                      UserRepository userRepository, TagRepository tagRepository) {
+                                      UserRepository userRepository) {
         return args -> {
             Logger logger = LoggerFactory.getLogger(getClass());
-            if (bookRepository.count() != 0L && tagRepository.count() != 0L) {
+            if (bookRepository.count() != 0L ){
+//                    && tagRepository.count() != 0L) {
                 logger.info("Using existing database");
                 return;
             }
@@ -46,14 +45,16 @@ public class DataGenerator {
             sampleBookRepositoryGenerator.setData(Book::setPublicationDate, DataType.DATE_OF_BIRTH);
             sampleBookRepositoryGenerator.setData(Book::setPages, DataType.NUMBER_UP_TO_1000);
             sampleBookRepositoryGenerator.setData(Book::setIsbn, DataType.EAN13);
+//            sampleBookRepositoryGenerator.setData(Book::setBorrowed, DataType.FULL_NAME);
+//            sampleBookRepositoryGenerator.setData(Book::setTags, DataType.OCCUPATION);
             bookRepository.saveAll(sampleBookRepositoryGenerator.create(10, seed));
 
-            logger.info("... generating 10 Sample Tag entities...");
-            ExampleDataGenerator<Tag> sampleTagRepositoryGenerator = new ExampleDataGenerator<>(
-                    Tag.class, LocalDateTime.of(2022, 1, 5, 0, 0, 0));
-            sampleTagRepositoryGenerator.setData(Tag::setId, DataType.ID);
-            sampleTagRepositoryGenerator.setData(Tag::setName, DataType.OCCUPATION);
-            tagRepository.saveAll(sampleTagRepositoryGenerator.create(3, seed));
+//            logger.info("... generating 10 Sample Tag entities...");
+//            ExampleDataGenerator<Tag> sampleTagRepositoryGenerator = new ExampleDataGenerator<>(
+//                    Tag.class, LocalDateTime.of(2022, 1, 5, 0, 0, 0));
+//            sampleTagRepositoryGenerator.setData(Tag::setId, DataType.ID);
+//            sampleTagRepositoryGenerator.setData(Tag::setName, DataType.OCCUPATION);
+//            tagRepository.saveAll(sampleTagRepositoryGenerator.create(3, seed));
 
             logger.info("... generating 2 User entities...");
             User user = new User();
@@ -74,6 +75,8 @@ public class DataGenerator {
             userRepository.save(admin);
 
             logger.info("Generated demo data");
+
+
         };
     }
 

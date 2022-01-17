@@ -27,15 +27,16 @@ export class AddBookView extends LitElement {
         ><vaadin-text-field label="Author" id="author"></vaadin-text-field
         ><vaadin-date-picker label="Publication date" id="publicationDate"></vaadin-date-picker
         ><vaadin-text-field label="Pages" id="pages"></vaadin-text-field
-        ><vaadin-text-field label="Isbn" id="isbn"></vaadin-text-field>
+        ><vaadin-text-field label="Isbn" id="isbn"></vaadin-text-field
+        ><vaadin-text-field label="Tags" id="tags"></vaadin-text-field>
       </vaadin-form-layout>
       <vaadin-horizontal-layout
           style="margin-top: var(--lumo-space-m); margin-bottom: var(--lumo-space-l);"
-          theme="spacing"
-      >
+          theme="spacing">
         <vaadin-button theme="primary" id="save"> Save </vaadin-button>
         <vaadin-button id="cancel"> Cancel </vaadin-button>
       </vaadin-horizontal-layout>
         `;
+
   }
 }

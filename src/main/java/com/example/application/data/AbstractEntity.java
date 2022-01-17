@@ -1,9 +1,11 @@
 package com.example.application.data;
 
+import com.vaadin.flow.component.Tag;
 import com.vaadin.fusion.Nonnull;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
+import java.util.Set;
 
 @MappedSuperclass
 public abstract class AbstractEntity {
@@ -41,4 +43,5 @@ public abstract class AbstractEntity {
         }
         return super.equals(other);
     }
+
 }

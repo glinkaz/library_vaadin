@@ -7,25 +7,35 @@ import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
+import com.vaadin.flow.component.grid.dataview.GridListDataView;
+import com.vaadin.flow.component.grid.editor.Editor;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.littemplate.LitTemplate;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.template.Id;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
+import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.spring.data.VaadinSpringDataHelpers;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
-
 import javax.annotation.security.PermitAll;
+import java.util.List;
+import java.util.Objects;
+
 
 @PageTitle("NewLibrary")
 @Route(value = "library/:bookID?/:action?(edit)", layout = MainLayout.class)
@@ -35,26 +45,44 @@ import javax.annotation.security.PermitAll;
 @JsModule("./views/library/new-library-view.ts")
 public class NewLibraryView extends LitTemplate implements HasStyle, BeforeEnterObserver {
 
-    @Id
+    @Id("grid")
     private Grid<Book> grid;
-
-    private Book book;
+    @Id
+    private TextField searchField;
+    @Id("borrowed-combobox")
+    private ComboBox<String> borrowedComboBox;
 
     private BookService bookService;
 
-    public NewLibraryView(BookService bookService) {
+    public NewLibraryView(@Autowired BookService bookService) {
         this.bookService = bookService;
+        Editor<Book> editor = grid.getEditor();
+
+
         addClassNames("library-view", "flex", "flex-col", "h-full");
         TemplateRenderer<Book> imageRenderer = TemplateRenderer
                 .<Book>of("<img style='height: 64px' src='[[item.image]]' />")
                 .withProperty("image", Book::getImage);
+
         grid.addColumn(imageRenderer).setHeader("Image").setWidth("68px").setFlexGrow(0);
 
-        grid.addColumn(Book::getName).setHeader("Name").setAutoWidth(true).setSortable(true);
-        grid.addColumn(Book::getAuthor).setHeader("Author").setAutoWidth(true).setSortable(true);
-        grid.addColumn(Book::getPublicationDate).setHeader("Publication Date").setAutoWidth(true).setSortable(true);
-        grid.addColumn(Book::getPages).setHeader("Pages").setAutoWidth(true).setSortable(true);
-        grid.addColumn(Book::getIsbn).setHeader("Isbn").setAutoWidth(true).setSortable(true);
+        grid.addColumn(Book::getName, "name").setHeader("Name").setAutoWidth(true);
+        grid.addColumn(Book::getAuthor, "author").setHeader("Author").setAutoWidth(true).setSortable(true);
+        grid.addColumn(Book::getPublicationDate, "publicationDate").setHeader("Publication Date").setAutoWidth(true).setSortable(true);
+        grid.addColumn(Book::getPages, "pages").setHeader("Pages").setComparator((p1, p2) -> p1.getPages() - p2.getPages()).setAutoWidth(true).setSortable(true);
+        grid.addColumn(Book::getIsbn, "isbn").setHeader("Isbn").setAutoWidth(true).setSortable(true);
+        Grid.Column<Book> borrowedColumn = grid.addColumn(Book::getBorrowed, "borrowed").setHeader("Borrowed").setAutoWidth(true).setSortable(true);
+        Grid.Column<Book> tagsColumn = grid.addColumn(Book::getTags, "tags").setHeader("Tags").setAutoWidth(true).setSortable(true);
+        Grid.Column<Book> editColumn = grid.addComponentColumn(person -> {
+            Button editButton = new Button("Edit");
+            editButton.addClickListener(e -> {
+                if (editor.isOpen())
+                    editor.cancel();
+                grid.getEditor().editItem(person);
+            });
+            return editButton;
+        }).setWidth("150px").setFlexGrow(0);
+
         grid.addColumn(
                 new ComponentRenderer<>(Button::new, (button, bookButton) -> {
                     button.addThemeVariants(ButtonVariant.LUMO_ICON,
@@ -63,23 +91,104 @@ public class NewLibraryView extends LitTemplate implements HasStyle, BeforeEnter
                     button.addClickListener(e -> this.removeBook(bookButton));
                     button.setIcon(new Icon(VaadinIcon.TRASH));
                 })).setHeader("Manage");
+
+
+
         grid.setItems(query -> bookService.list(
                         PageRequest.of(query.getPage(), query.getPageSize(), VaadinSpringDataHelpers.toSpringDataSort(query)))
                 .stream());
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
         grid.setHeightFull();
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
-
         grid.asSingleSelect().addValueChangeListener(event -> {
             //todo when selected item
             Notification notification = Notification.show("Clicked item!");
         });
+
+        List<Book> books = bookService.getBooks();
+        GridListDataView<Book> dataView = grid.setItems(books);
+
+        borrowedComboBox.setAllowCustomValue(true);
+        borrowedComboBox.setItems("All", "Borrowed", "Not Borrowed");
+        grid.setItems(books).addFilter(book -> {
+
+            if (Objects.equals(borrowedComboBox.getValue(), "Borrowed")){
+                return Objects.equals(book.getBorrowed(), "");
+            }
+            else if(Objects.equals(borrowedComboBox.getValue(), "Not Borrowed")){
+                return !Objects.equals(book.getBorrowed(), "");
+            }else{
+                return true;
+            }
+
+        });
+        borrowedComboBox.addValueChangeListener(e -> grid.getListDataView().refreshAll());
+
+        searchField.setWidth("50%");
+        searchField.setPlaceholder("Search");
+        searchField.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
+        searchField.setValueChangeMode(ValueChangeMode.EAGER);
+        searchField.addValueChangeListener(e -> dataView.refreshAll());
+
+        dataView.addFilter(book -> {
+            String searchTerm = searchField.getValue().trim();
+
+            if (searchTerm.isEmpty())
+                return true;
+
+            boolean matchesName = matchesTerm(book.getName(), searchTerm);
+            boolean matchesAuthor = matchesTerm(book.getAuthor(), searchTerm);
+            boolean matchesIsbn = matchesTerm(book.getIsbn(), searchTerm);
+            boolean matchesPublicationDate = matchesTerm(book.getPublicationDate().toString(), searchTerm);
+            boolean matchesPages = matchesTerm(book.getPages().toString(), searchTerm);
+//            boolean matchesBorrowed = matchesTerm(book.getBorrowed(), searchTerm);
+//            boolean matchesTags = matchesTerm(book.getTags(), searchTerm);
+
+            return matchesName || matchesAuthor || matchesIsbn || matchesPublicationDate || matchesPages;
+//                    || matchesBorrowed || matchesTags;
+
+        });
+
+        Binder<Book> binder = new Binder<>(Book.class);
+
+        editor.setBinder(binder);
+        editor.setBuffered(true);
+
+        TextField borrowedField = new TextField();
+        borrowedField.setWidthFull();
+        binder.forField(borrowedField)
+                .bind(Book::getBorrowed, Book::setBorrowed);
+        borrowedColumn.setEditorComponent(borrowedField);
+
+        TextField tagsField = new TextField();
+        tagsField.setWidthFull();
+        binder.forField(tagsField)
+                .bind(Book::getTags, Book::setTags);
+        tagsColumn.setEditorComponent(tagsField);
+
+        Button saveButton = new Button("Save", e -> editor.save());
+        Button cancelButton = new Button(VaadinIcon.CLOSE.create(),
+                e -> editor.cancel());
+        cancelButton.addThemeVariants(ButtonVariant.LUMO_ICON,
+                ButtonVariant.LUMO_ERROR);
+        HorizontalLayout actions = new HorizontalLayout(saveButton,
+                cancelButton);
+        actions.setPadding(false);
+        editColumn.setEditorComponent(actions);
+
+    }
+
+
+
+    private boolean matchesTerm(String value, String searchTerm) {
+        return value.toLowerCase().contains(searchTerm.toLowerCase());
     }
 
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
 
     }
+
 
     private void refreshGrid() {
         grid.select(null);
@@ -92,4 +201,8 @@ public class NewLibraryView extends LitTemplate implements HasStyle, BeforeEnter
         bookService.delete(book.getId());
         this.refreshGrid();
     }
+
+
 }
+
+

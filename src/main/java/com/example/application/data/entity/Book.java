@@ -2,14 +2,7 @@ package com.example.application.data.entity;
 
 import com.example.application.data.AbstractEntity;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.Lob;
-import javax.persistence.ManyToMany;
+import javax.persistence.*;
 
 @Entity(name = "books")
 public class Book extends AbstractEntity {
@@ -21,26 +14,30 @@ public class Book extends AbstractEntity {
     private LocalDate publicationDate;
     private Integer pages;
     private String isbn;
+    private String borrowed;
+    private String tags;
+//    @ManyToMany
+//    private Set<Tag> tags;
 
-    @ManyToMany(
-            cascade = {CascadeType.MERGE, CascadeType.PERSIST}
-    )
-    @JoinTable(
-            name = "books_tags",
-            joinColumns = @JoinColumn(name = "book_id"),
-            inverseJoinColumns = @JoinColumn(name = "tag_id")
-    )
-    private Set<Tag> tags = new HashSet<>();
+//    @ManyToMany(
+//            cascade = {CascadeType.MERGE, CascadeType.PERSIST}
+//    )
+//    @JoinTable(
+//            name = "books_tags",
+//            joinColumns = @JoinColumn(name = "book_id"),
+//            inverseJoinColumns = @JoinColumn(name = "tag_id")
+//    )
+//    private Set<Tag> tags = new HashSet<>();
 
-    public void addTag(Tag tag){
-        this.tags.add(tag);
-        tag.books.add(this);
-    }
+//    public void addTag(Tag tag){
+//        this.tags.add(tag);
+//        tag.books.add(this);
+//    }
 
-    public void remove(Tag tag){
-        this.tags.remove(tag);
-        tag.books.remove(this);
-    }
+//    public void remove(Tag tag){
+//        this.tags.remove(tag);
+//        tag.books.remove(this);
+//    }
     //czy pożyczona i komu
     //gdzie sie znajduje
     //uzytkownik ma biblioteke jedna
@@ -84,5 +81,18 @@ public class Book extends AbstractEntity {
     public void setIsbn(String isbn) {
         this.isbn = isbn;
     }
+    public String getTags() {
+        return tags;
+    }
+    public void setTags(String tags) {
+        this.tags = tags;
+    }
 
+    public String getBorrowed() {
+        return borrowed;
+    }
+
+    public void setBorrowed(String borrowed) {
+        this.borrowed = borrowed;
+    }
 }

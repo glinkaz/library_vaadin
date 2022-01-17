@@ -7,6 +7,9 @@ import '@vaadin/vaadin-grid/vaadin-grid-column';
 import '@vaadin/vaadin-ordered-layout/vaadin-horizontal-layout';
 import '@vaadin/vaadin-split-layout';
 import '@vaadin/vaadin-text-field';
+import '@vaadin/vaadin-combo-box';
+
+// import '@vaadin/vaadin-search-field';
 import { html, LitElement } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
@@ -21,6 +24,10 @@ export class NewLibraryView extends LitElement {
     return html`
       <div class="flex-grow w-full" id="grid-wrapper">
         <vaadin-grid id="grid"></vaadin-grid>
+      </div>
+      <div>
+        <vaadin-text-field label="Search" id="searchField"></vaadin-text-field>
+        <vaadin-combo-box id="borrowed-combobox"></vaadin-combo-box>
       </div>
       `;
   }

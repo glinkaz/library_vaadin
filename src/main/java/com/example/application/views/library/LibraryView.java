@@ -11,9 +11,13 @@ import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
+import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.littemplate.LitTemplate;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.template.Id;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
@@ -21,6 +25,7 @@ import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
+import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
@@ -31,6 +36,7 @@ import elemental.json.Json;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.List;
 import java.util.Optional;
 import javax.annotation.security.PermitAll;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,6 +81,8 @@ public class LibraryView extends LitTemplate implements HasStyle, BeforeEnterObs
     private Button cancel;
     @Id
     private Button save;
+    @Id
+    private TextField searchField;
 
     private BeanValidationBinder<Book> binder;
 
@@ -143,6 +151,30 @@ public class LibraryView extends LitTemplate implements HasStyle, BeforeEnterObs
                 Notification.show("An exception happened while trying to store the sampleBook details.");
             }
         });
+        List<Book> books = bookService.getBooks();
+        GridListDataView<Book> dataView = grid.setItems(books);
+
+        searchField.setWidth("50%");
+        searchField.setPlaceholder("Search");
+        searchField.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
+        searchField.setValueChangeMode(ValueChangeMode.EAGER);
+        searchField.addValueChangeListener(e -> dataView.refreshAll());
+
+        dataView.addFilter(book -> {
+            String searchTerm = searchField.getValue().trim();
+
+            if (searchTerm.isEmpty())
+                return true;
+
+            boolean matchesFullName = matchesTerm(book.getName(),
+                    searchTerm);
+            boolean matchesEmail = matchesTerm(book.getAuthor(), searchTerm);
+            boolean matchesProfession = matchesTerm(book.getPages().toString(),
+                    searchTerm);
+
+            return matchesFullName || matchesEmail || matchesProfession;
+        });
+
     }
 
     @Override
@@ -200,5 +232,8 @@ public class LibraryView extends LitTemplate implements HasStyle, BeforeEnterObs
             this.imagePreview.setSrc(value.getImage());
         }
 
+    }
+    private boolean matchesTerm(String value, String searchTerm) {
+        return value.toLowerCase().contains(searchTerm.toLowerCase());
     }
 }

@@ -22,6 +22,7 @@ export class LibraryView extends LitElement {
       <div class="flex-grow w-full" id="grid-wrapper">
         <vaadin-grid id="grid"></vaadin-grid>
       </div>
+     
       <div class="flex flex-col" style="width: 400px;">
         <div class="p-l flex-grow">
           <vaadin-form-layout>
@@ -33,6 +34,7 @@ export class LibraryView extends LitElement {
             ><vaadin-date-picker label="Publication date" id="publicationDate"></vaadin-date-picker
             ><vaadin-text-field label="Pages" id="pages"></vaadin-text-field
             ><vaadin-text-field label="Isbn" id="isbn"></vaadin-text-field>
+            <vaadin-text-field label="Search" id="searchField"></vaadin-text-field>
           </vaadin-form-layout>
         </div>
         <vaadin-horizontal-layout class="w-full flex-wrap bg-contrast-5 py-s px-l" theme="spacing">
@@ -40,6 +42,8 @@ export class LibraryView extends LitElement {
           <vaadin-button theme="tertiary" slot="" id="cancel">Cancel</vaadin-button>
         </vaadin-horizontal-layout>
       </div>
+      
+      
     </vaadin-split-layout>`;
   }
 }

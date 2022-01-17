@@ -2,15 +2,20 @@ package com.example.application.views.library;
 
 import com.example.application.data.entity.Book;
 import com.example.application.data.service.BookService;
+//import com.example.application.data.service.TagService;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.charts.model.Select;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.listbox.MultiSelectListBox;
 import com.vaadin.flow.component.littemplate.LitTemplate;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.template.Id;
@@ -19,15 +24,16 @@ import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import elemental.json.Json;
 import org.springframework.web.util.UriUtils;
-
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.stream.Collectors;
 
 /**
  * A Designer generated component for the person-form-view template.
@@ -57,11 +63,13 @@ public class AddBookView extends LitTemplate {
     private TextField pages;
     @Id("isbn")
     private TextField isbn;
-
+    @Id("tags")
+    private TextField tags;
     @Id("cancel")
     private Button cancel;
-    @Id("save")
+    @Id
     private Button save;
+
 
     private Book book;
 
@@ -71,36 +79,43 @@ public class AddBookView extends LitTemplate {
 
     public AddBookView(BookService bookService) {
         this.bookService = bookService;
+//        this.tagService = tagService;
 
-        // Configure Form
+//        tags = new MultiSelectListBox<>();
+//        tags.setItems(tagService.list());
+//        tags.select(tagService.list().get(0));
+//        tags.setRenderer(new ComponentRenderer<>(t ->
+//                new Text(t.getName()))
+//        );
+//        tags.setItems(tagService.list().stream().map(t -> t.getName()).toList());
         binder = new BeanValidationBinder<>(Book.class);
 
         // Bind fields. This where you'd define e.g. validation rules
         binder.forField(pages).withConverter(new StringToIntegerConverter("Only numbers are allowed")).bind("pages");
-
         binder.bindInstanceFields(this);
 
         attachImageUpload(image, imagePreview);
 
-        cancel.addClickListener(e -> {
-            clearForm();
-        });
+//        cancel.addClickListener(e -> {
+//            clearForm();
+//        });
 
         cancel.addClickListener(e -> clearForm());
         save.addClickListener(e -> {
             try {
-                if (this.book == null) {
-                    this.book = new Book();
-                }
-                binder.writeBean(this.book);
-                this.book.setImage(imagePreview.getSrc());
+//                if (this.book == null) {
+//                    this.book = new Book();
+//                }
+                book = new Book();
+                binder.writeBean(book);
+                book.setImage(imagePreview.getSrc());
 
-                bookService.update(this.book);
+                bookService.update(book);
                 clearForm();
                 Notification.show("SampleBook details stored.");
                 UI.getCurrent().navigate(NewLibraryView.class);
             } catch (ValidationException validationException) {
-                Notification.show("An exception happened while trying to store the sampleBook details.");
+                Notification.show("An exception BOOK_TITLEhappened while trying to store the sampleBook details.");
             }
         });
     }
@@ -137,5 +152,7 @@ public class AddBookView extends LitTemplate {
             this.imagePreview.setSrc(value.getImage());
         }
     }
+
+
 
 }
