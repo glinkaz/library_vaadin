@@ -109,7 +109,6 @@ public class AddBookView extends LitTemplate {
                 book = new Book();
                 binder.writeBean(book);
                 book.setImage(imagePreview.getSrc());
-
                 bookService.update(book);
                 clearForm();
                 Notification.show("SampleBook details stored.");

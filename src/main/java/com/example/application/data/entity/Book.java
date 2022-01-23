@@ -1,8 +1,11 @@
 package com.example.application.data.entity;
 
 import com.example.application.data.AbstractEntity;
+
+import javax.persistence.Entity;
+import javax.persistence.Lob;
+import javax.persistence.ManyToOne;
 import java.time.LocalDate;
-import javax.persistence.*;
 
 @Entity(name = "books")
 public class Book extends AbstractEntity {
@@ -16,6 +19,8 @@ public class Book extends AbstractEntity {
     private String isbn;
     private String borrowed;
     private String tags;
+    @ManyToOne
+    private User owner;
 //    @ManyToMany
 //    private Set<Tag> tags;
 
@@ -87,13 +92,17 @@ public class Book extends AbstractEntity {
     public void setTags(String tags) {
         this.tags = tags;
     }
-
     public String getBorrowed() {
         return borrowed;
     }
-
     public void setBorrowed(String borrowed) {
         this.borrowed = borrowed;
+    }
+    public User getOwner() {
+        return owner;
+    }
+    public void setOwner(User owner) {
+        this.owner = owner;
     }
 
     @Override
@@ -106,6 +115,7 @@ public class Book extends AbstractEntity {
                 ", isbn='" + isbn + '\'' +
                 ", borrowed='" + borrowed + '\'' +
                 ", tags='" + tags + '\'' +
+                ", owner='" + owner + '\'' +
                 '}';
     }
 }

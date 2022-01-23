@@ -47,6 +47,7 @@ public class DataGenerator {
             sampleBookRepositoryGenerator.setData(Book::setIsbn, DataType.EAN13);
 //            sampleBookRepositoryGenerator.setData(Book::setBorrowed, DataType.FULL_NAME);
 //            sampleBookRepositoryGenerator.setData(Book::setTags, DataType.OCCUPATION);
+//            sampleBookRepositoryGenerator.setData(Book::setOwner, ...);
             bookRepository.saveAll(sampleBookRepositoryGenerator.create(10, seed));
 
 //            logger.info("... generating 10 Sample Tag entities...");
@@ -58,7 +59,7 @@ public class DataGenerator {
 
             logger.info("... generating 2 User entities...");
             User user = new User();
-            user.setName("John Normal");
+            user.setName("User Zuzia");
             user.setUsername("user");
             user.setHashedPassword(passwordEncoder.encode("user"));
             user.setProfilePictureUrl(
@@ -66,7 +67,7 @@ public class DataGenerator {
             user.setRoles(Collections.singleton(Role.USER));
             userRepository.save(user);
             User admin = new User();
-            admin.setName("Emma Powerful");
+            admin.setName("Admin Jakub");
             admin.setUsername("admin");
             admin.setHashedPassword(passwordEncoder.encode("admin"));
             admin.setProfilePictureUrl(

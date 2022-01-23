@@ -1,7 +1,9 @@
 package com.example.application.views.library;
 
 import com.example.application.data.entity.Book;
+import com.example.application.data.entity.User;
 import com.example.application.data.service.BookService;
+import com.example.application.security.AuthenticatedUser;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.Tag;
@@ -36,6 +38,7 @@ import org.springframework.data.domain.PageRequest;
 import javax.annotation.security.PermitAll;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 @PageTitle("NewLibrary")
@@ -54,11 +57,19 @@ public class NewLibraryView extends LitTemplate implements HasStyle, BeforeEnter
     private ComboBox<String> borrowedComboBox;
 
     private BookService bookService;
+    private AuthenticatedUser authenticatedUser;
 
-    public NewLibraryView(@Autowired BookService bookService) {
+    public NewLibraryView(@Autowired BookService bookService, AuthenticatedUser authenticatedUser) {
         this.bookService = bookService;
+        this.authenticatedUser = authenticatedUser;
         Editor<Book> editor = grid.getEditor();
 
+        Optional<User> maybeUser = authenticatedUser.get();
+        if (maybeUser.isPresent()) {
+            User user = maybeUser.get();
+
+//            bookService.find(
+        }
 
         addClassNames("library-view", "flex", "flex-col", "h-full");
         TemplateRenderer<Book> imageRenderer = TemplateRenderer

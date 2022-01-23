@@ -4,10 +4,7 @@ import com.example.application.data.AbstractEntity;
 import com.example.application.data.Role;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.Set;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Lob;
+import javax.persistence.*;
 
 @Entity
 public class User extends AbstractEntity {
@@ -20,6 +17,10 @@ public class User extends AbstractEntity {
     private Set<Role> roles;
     @Lob
     private String profilePictureUrl;
+    //TODO dodac liste ksiezak
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "BOOK_ID")
+    private Set<Book> library;
 
     public String getUsername() {
         return username;
