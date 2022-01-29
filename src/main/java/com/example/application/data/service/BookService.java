@@ -44,10 +44,6 @@ public class BookService {
         bookRepository.deleteById(id);
     }
 
-    public Page<Book> list(User user, Pageable pageable) {
-        return bookRepository.findAllByOwner(user, pageable);
-    }
-
     public int count() {
         return (int) bookRepository.count();
     }
@@ -97,7 +93,7 @@ public class BookService {
 //    }
 
     public List<Book> getBooks(User user) {
-        if (user.getRoles().equals(Role.ADMIN)){
+        if (user.getRoles().contains(Role.ADMIN)){
             return bookRepository.findAll();
         }
         return bookRepository.findAllByOwner(user);

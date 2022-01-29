@@ -105,8 +105,7 @@ public class NewLibraryView extends LitTemplate implements HasStyle, BeforeEnter
                     })).setHeader("Manage");
 
 
-            grid.setItems(query -> bookService.list(user,
-                            PageRequest.of(query.getPage(), query.getPageSize(), VaadinSpringDataHelpers.toSpringDataSort(query)))
+            grid.setItems(query -> bookService.getBooks(user)
                     .stream());
             grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
             grid.setHeightFull();
