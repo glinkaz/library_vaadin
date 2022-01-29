@@ -32,6 +32,8 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import elemental.json.Json;
 import org.springframework.web.util.UriUtils;
+
+import javax.annotation.security.PermitAll;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -46,7 +48,7 @@ import java.util.stream.Collectors;
  */
 @PageTitle("Add Book")
 @Route(value = "add-book", layout = MainLayout.class)
-@AnonymousAllowed
+@PermitAll
 @Tag("add-book-view")
 @JsModule("./views/library/add-book-view.ts")
 @Uses(Icon.class)

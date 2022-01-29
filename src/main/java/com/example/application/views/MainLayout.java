@@ -126,7 +126,7 @@ public class MainLayout extends AppLayout {
 
                 new MenuItemInfo("Add Book", "la la-columns", AddBookView.class), //
 
-                new MenuItemInfo("Create Count", "la la-user", CreateCountView.class), //
+//                new MenuItemInfo("Create Count", "la la-user", CreateCountView.class), //
 
         };
         List<RouterLink> links = new ArrayList<>();

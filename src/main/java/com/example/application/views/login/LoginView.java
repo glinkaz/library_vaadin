@@ -1,5 +1,6 @@
 package com.example.application.views.login;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.login.LoginForm;
 import com.vaadin.flow.component.login.LoginI18n;
@@ -18,10 +19,12 @@ public class LoginView extends LoginOverlay {
         i18n.setHeader(new LoginI18n.Header());
         i18n.getHeader().setTitle("Library");
         i18n.getHeader().setDescription("Login using user/user or admin/admin");
+        i18n.getForm().setForgotPassword("Create new account");
         i18n.setAdditionalInformation(null);
         setI18n(i18n);
 
-        setForgotPasswordButtonVisible(false);
+        setForgotPasswordButtonVisible(true);
+        addForgotPasswordListener(e -> UI.getCurrent().navigate("create-count"));
         setOpened(true);
     }
 
