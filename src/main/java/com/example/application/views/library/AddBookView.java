@@ -1,8 +1,10 @@
 package com.example.application.views.library;
 
 import com.example.application.data.entity.Book;
+import com.example.application.data.entity.User;
 import com.example.application.data.service.BookService;
 //import com.example.application.data.service.TagService;
+import com.example.application.security.AuthenticatedUser;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.Text;
@@ -33,6 +35,7 @@ import org.springframework.web.util.UriUtils;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -76,9 +79,12 @@ public class AddBookView extends LitTemplate {
     private BeanValidationBinder<Book> binder;
 
     private BookService bookService;
+    private AuthenticatedUser authenticatedUser;
 
-    public AddBookView(BookService bookService) {
+
+    public AddBookView(BookService bookService, AuthenticatedUser authenticatedUser) {
         this.bookService = bookService;
+        this.authenticatedUser = authenticatedUser;
 //        this.tagService = tagService;
 
 //        tags = new MultiSelectListBox<>();
@@ -109,6 +115,11 @@ public class AddBookView extends LitTemplate {
                 book = new Book();
                 binder.writeBean(book);
                 book.setImage(imagePreview.getSrc());
+                Optional<User> maybeUser = authenticatedUser.get();
+                if (maybeUser.isPresent()) {
+                    User user = maybeUser.get();
+                    book.setOwner(user);
+                }
                 bookService.update(book);
                 clearForm();
                 Notification.show("SampleBook details stored.");

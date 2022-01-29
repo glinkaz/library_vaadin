@@ -103,7 +103,7 @@ public class LibraryView extends LitTemplate implements HasStyle, BeforeEnterObs
         grid.addColumn(Book::getPublicationDate).setHeader("Publication Date").setAutoWidth(true);
         grid.addColumn(Book::getPages).setHeader("Pages").setAutoWidth(true);
         grid.addColumn(Book::getIsbn).setHeader("Isbn").setAutoWidth(true);
-        grid.setItems(query -> bookService.list(
+        grid.setItems(query -> bookService.list(null,
                 PageRequest.of(query.getPage(), query.getPageSize(), VaadinSpringDataHelpers.toSpringDataSort(query)))
                 .stream());
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
@@ -151,7 +151,7 @@ public class LibraryView extends LitTemplate implements HasStyle, BeforeEnterObs
                 Notification.show("An exception happened while trying to store the sampleBook details.");
             }
         });
-        List<Book> books = bookService.getBooks();
+        List<Book> books = bookService.getBooks(null);
         GridListDataView<Book> dataView = grid.setItems(books);
 
         searchField.setWidth("50%");

@@ -68,142 +68,138 @@ public class NewLibraryView extends LitTemplate implements HasStyle, BeforeEnter
         if (maybeUser.isPresent()) {
             User user = maybeUser.get();
 
-//            bookService.find(
-        }
 
-        addClassNames("library-view", "flex", "flex-col", "h-full");
-        TemplateRenderer<Book> imageRenderer = TemplateRenderer
-                .<Book>of("<img style='height: 64px' src='[[item.image]]' />")
-                .withProperty("image", Book::getImage);
+            addClassNames("library-view", "flex", "flex-col", "h-full");
+            TemplateRenderer<Book> imageRenderer = TemplateRenderer
+                    .<Book>of("<img style='height: 64px' src='[[item.image]]' />")
+                    .withProperty("image", Book::getImage);
 
-        grid.addColumn(imageRenderer).setHeader("Image").setWidth("68px").setFlexGrow(0);
+            grid.addColumn(imageRenderer).setHeader("Image").setWidth("68px").setFlexGrow(0);
 
-        grid.addColumn(Book::getName, "name").setHeader("Name").setAutoWidth(true);
-        grid.addColumn(Book::getAuthor, "author").setHeader("Author").setAutoWidth(true).setSortable(true);
-        grid.addColumn(Book::getPublicationDate, "publicationDate").setHeader("Publication Date").setAutoWidth(true).setSortable(true);
-        grid.addColumn(Book::getPages, "pages").setHeader("Pages").setComparator((p1, p2) -> p1.getPages() - p2.getPages()).setAutoWidth(true).setSortable(true);
-        grid.addColumn(Book::getIsbn, "isbn").setHeader("Isbn").setAutoWidth(true).setSortable(true);
-        Grid.Column<Book> borrowedColumn = grid.addColumn(Book::getBorrowed, "borrowed").setHeader("Borrowed").setAutoWidth(true).setSortable(true);
-        Grid.Column<Book> tagsColumn = grid.addColumn(Book::getTags, "tags").setHeader("Tags").setAutoWidth(true).setSortable(true);
-        Grid.Column<Book> editColumn = grid.addComponentColumn(person -> {
-            Button editButton = new Button("Edit");
-            editButton.addClickListener(e -> {
-                log.warn("Clicked edit button - " + person.getName());
-                if (editor.isOpen())
-                    log.info("Open another editor");
+            grid.addColumn(Book::getName, "name").setHeader("Name").setAutoWidth(true);
+            grid.addColumn(Book::getAuthor, "author").setHeader("Author").setAutoWidth(true).setSortable(true);
+            grid.addColumn(Book::getPublicationDate, "publicationDate").setHeader("Publication Date").setAutoWidth(true).setSortable(true);
+            grid.addColumn(Book::getPages, "pages").setHeader("Pages").setComparator((p1, p2) -> p1.getPages() - p2.getPages()).setAutoWidth(true).setSortable(true);
+            grid.addColumn(Book::getIsbn, "isbn").setHeader("Isbn").setAutoWidth(true).setSortable(true);
+            Grid.Column<Book> borrowedColumn = grid.addColumn(Book::getBorrowed, "borrowed").setHeader("Borrowed").setAutoWidth(true).setSortable(true);
+            Grid.Column<Book> tagsColumn = grid.addColumn(Book::getTags, "tags").setHeader("Tags").setAutoWidth(true).setSortable(true);
+            Grid.Column<Book> editColumn = grid.addComponentColumn(person -> {
+                Button editButton = new Button("Edit");
+                editButton.addClickListener(e -> {
+                    log.warn("Clicked edit button - " + person.getName());
+                    if (editor.isOpen())
+                        log.info("Open another editor");
                     editor.cancel();
-                grid.getEditor().editItem(person);
+                    grid.getEditor().editItem(person);
+                });
+                return editButton;
+            }).setWidth("150px").setFlexGrow(0);
+
+            grid.addColumn(
+                    new ComponentRenderer<>(Button::new, (button, bookButton) -> {
+                        button.addThemeVariants(ButtonVariant.LUMO_ICON,
+                                ButtonVariant.LUMO_ERROR,
+                                ButtonVariant.LUMO_TERTIARY);
+                        button.addClickListener(e -> this.removeBook(bookButton));
+                        button.setIcon(new Icon(VaadinIcon.TRASH));
+                    })).setHeader("Manage");
+
+
+            grid.setItems(query -> bookService.list(user,
+                            PageRequest.of(query.getPage(), query.getPageSize(), VaadinSpringDataHelpers.toSpringDataSort(query)))
+                    .stream());
+            grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
+            grid.setHeightFull();
+            grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
+            grid.asSingleSelect().addValueChangeListener(event -> {
+                //todo when selected item
+                Notification notification = Notification.show("Clicked item!");
             });
-            return editButton;
-        }).setWidth("150px").setFlexGrow(0);
 
-        grid.addColumn(
-                new ComponentRenderer<>(Button::new, (button, bookButton) -> {
-                    button.addThemeVariants(ButtonVariant.LUMO_ICON,
-                            ButtonVariant.LUMO_ERROR,
-                            ButtonVariant.LUMO_TERTIARY);
-                    button.addClickListener(e -> this.removeBook(bookButton));
-                    button.setIcon(new Icon(VaadinIcon.TRASH));
-                })).setHeader("Manage");
+            List<Book> books = bookService.getBooks(user);
+            GridListDataView<Book> dataView = grid.setItems(books);
 
+            borrowedComboBox.setAllowCustomValue(true);
+            borrowedComboBox.setItems("All", "Borrowed", "Not Borrowed");
+            grid.setItems(books).addFilter(book -> {
 
+                if (Objects.equals(borrowedComboBox.getValue(), "Not Borrowed")) {
+                    return book.getBorrowed() == null || book.getBorrowed().isEmpty() || book.getBorrowed().isBlank();
+                } else if (Objects.equals(borrowedComboBox.getValue(), "Borrowed")) {
+                    return book.getBorrowed() != null && !book.getBorrowed().isEmpty() && !book.getBorrowed().isBlank();
+                } else {
+                    return true;
+                }
 
-        grid.setItems(query -> bookService.list(
-                        PageRequest.of(query.getPage(), query.getPageSize(), VaadinSpringDataHelpers.toSpringDataSort(query)))
-                .stream());
-        grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
-        grid.setHeightFull();
-        grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
-        grid.asSingleSelect().addValueChangeListener(event -> {
-            //todo when selected item
-            Notification notification = Notification.show("Clicked item!");
-        });
+            });
+            borrowedComboBox.addValueChangeListener(e -> grid.getListDataView().refreshAll());
 
-        List<Book> books = bookService.getBooks();
-        GridListDataView<Book> dataView = grid.setItems(books);
+            searchField.setWidth("50%");
+            searchField.setPlaceholder("Search");
+            searchField.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
+            searchField.setValueChangeMode(ValueChangeMode.EAGER);
+            searchField.addValueChangeListener(e -> dataView.refreshAll());
 
-        borrowedComboBox.setAllowCustomValue(true);
-        borrowedComboBox.setItems("All", "Borrowed", "Not Borrowed");
-        grid.setItems(books).addFilter(book -> {
+            dataView.addFilter(book -> {
+                String searchTerm = searchField.getValue().trim();
 
-            if (Objects.equals(borrowedComboBox.getValue(), "Not Borrowed")){
-                return book.getBorrowed() == null || book.getBorrowed().isEmpty() || book.getBorrowed().isBlank();
-            }
-            else if(Objects.equals(borrowedComboBox.getValue(), "Borrowed")){
-                return book.getBorrowed() != null && !book.getBorrowed().isEmpty() && !book.getBorrowed().isBlank();
-            }else{
-                return true;
-            }
+                if (searchTerm.isEmpty())
+                    return true;
 
-        });
-        borrowedComboBox.addValueChangeListener(e -> grid.getListDataView().refreshAll());
+                boolean matchesName = matchesTerm(book.getName(), searchTerm);
+                boolean matchesAuthor = matchesTerm(book.getAuthor(), searchTerm);
+                boolean matchesIsbn = matchesTerm(book.getIsbn(), searchTerm);
+                boolean matchesPublicationDate = matchesTerm(book.getPublicationDate().toString(), searchTerm);
+                boolean matchesPages = matchesTerm(book.getPages().toString(), searchTerm);
+                boolean matchesBorrowed = matchesTerm(book.getBorrowed(), searchTerm);
+                boolean matchesTags = matchesTerm(book.getTags(), searchTerm);
 
-        searchField.setWidth("50%");
-        searchField.setPlaceholder("Search");
-        searchField.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
-        searchField.setValueChangeMode(ValueChangeMode.EAGER);
-        searchField.addValueChangeListener(e -> dataView.refreshAll());
+                return matchesName || matchesAuthor || matchesIsbn || matchesPublicationDate || matchesPages
+                        || matchesBorrowed || matchesTags;
 
-        dataView.addFilter(book -> {
-            String searchTerm = searchField.getValue().trim();
+            });
 
-            if (searchTerm.isEmpty())
-                return true;
+            Binder<Book> binder = new Binder<>(Book.class);
 
-            boolean matchesName = matchesTerm(book.getName(), searchTerm);
-            boolean matchesAuthor = matchesTerm(book.getAuthor(), searchTerm);
-            boolean matchesIsbn = matchesTerm(book.getIsbn(), searchTerm);
-            boolean matchesPublicationDate = matchesTerm(book.getPublicationDate().toString(), searchTerm);
-            boolean matchesPages = matchesTerm(book.getPages().toString(), searchTerm);
-            boolean matchesBorrowed = matchesTerm(book.getBorrowed(), searchTerm);
-            boolean matchesTags = matchesTerm(book.getTags(), searchTerm);
+            editor.setBinder(binder);
+            editor.setBuffered(true);
 
-            return matchesName || matchesAuthor || matchesIsbn || matchesPublicationDate || matchesPages
-                    || matchesBorrowed || matchesTags;
+            TextField borrowedField = new TextField();
+            borrowedField.setWidthFull();
+            binder.forField(borrowedField)
+                    .bind(Book::getBorrowed, Book::setBorrowed);
+            borrowedField.getValue();
+            //Book -> wstawić do booka warośc borrower -> updateuj booka z nową wartością borrower
+            borrowedColumn.setEditorComponent(borrowedField);
 
-        });
+            TextField tagsField = new TextField();
+            tagsField.setWidthFull();
+            binder.forField(tagsField)
+                    .bind(Book::getTags, Book::setTags);
+            tagsColumn.setEditorComponent(tagsField);
 
-        Binder<Book> binder = new Binder<>(Book.class);
-
-        editor.setBinder(binder);
-        editor.setBuffered(true);
-
-        TextField borrowedField = new TextField();
-        borrowedField.setWidthFull();
-        binder.forField(borrowedField)
-                .bind(Book::getBorrowed, Book::setBorrowed);
-        borrowedField.getValue();
-        //Book -> wstawić do booka warośc borrower -> updateuj booka z nową wartością borrower
-        borrowedColumn.setEditorComponent(borrowedField);
-
-        TextField tagsField = new TextField();
-        tagsField.setWidthFull();
-        binder.forField(tagsField)
-                .bind(Book::getTags, Book::setTags);
-        tagsColumn.setEditorComponent(tagsField);
-
-        Button saveButton = new Button("Save", e -> {
-            log.info("Zuzia - editor - " + editor.getItem().getBorrowed());
-            Book saveBook = editor.getItem();
-            saveBook.setBorrowed(borrowedField.getValue());
-            log.info("Zuzia - Save button - " + borrowedField.getValue());
-            bookService.update(saveBook);
-            log.info("Zuzia - New Book object - " + saveBook.toString());
-            editor.save();
-            refreshGrid();
+            Button saveButton = new Button("Save", e -> {
+                log.info("Zuzia - editor - " + editor.getItem().getBorrowed());
+                Book saveBook = editor.getItem();
+                saveBook.setBorrowed(borrowedField.getValue());
+                log.info("Zuzia - Save button - " + borrowedField.getValue());
+                bookService.update(saveBook);
+                log.info("Zuzia - New Book object - " + saveBook.toString());
+                editor.save();
+                refreshGrid();
 //            log.info("editor - " + editor.getItem().getBorrowed());
-        });
-        Button cancelButton = new Button(VaadinIcon.CLOSE.create(), e -> {
-            editor.cancel();
-            log.info("Zuzia - Canel button ");
-        });
-        cancelButton.addThemeVariants(ButtonVariant.LUMO_ICON,
-                ButtonVariant.LUMO_ERROR);
-        HorizontalLayout actions = new HorizontalLayout(saveButton,
-                cancelButton);
-        actions.setPadding(false);
-        editColumn.setEditorComponent(actions);
-
+            });
+            Button cancelButton = new Button(VaadinIcon.CLOSE.create(), e -> {
+                editor.cancel();
+                log.info("Zuzia - Canel button ");
+            });
+            cancelButton.addThemeVariants(ButtonVariant.LUMO_ICON,
+                    ButtonVariant.LUMO_ERROR);
+            HorizontalLayout actions = new HorizontalLayout(saveButton,
+                    cancelButton);
+            actions.setPadding(false);
+            editColumn.setEditorComponent(actions);
+        }
     }
 
 

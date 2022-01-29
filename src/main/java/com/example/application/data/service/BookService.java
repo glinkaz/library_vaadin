@@ -1,9 +1,11 @@
 package com.example.application.data.service;
 
+import com.example.application.data.Role;
 import com.example.application.data.entity.Book;
 import java.util.List;
 import java.util.Optional;
 
+import com.example.application.data.entity.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -29,11 +31,12 @@ public class BookService {
         return bookRepository.save(entity);
     }
 
-    public Book save(Book entity) {
+    public Book save(User user, Book entity) {
         //if exists - dont update book
 //        if (bookRepository.exists(entity)){
 //            throw new IllegalArgumentException("Book exists in library");
 //        }
+        entity.setOwner(user);
         return bookRepository.save(entity);
     }
 
@@ -41,8 +44,8 @@ public class BookService {
         bookRepository.deleteById(id);
     }
 
-    public Page<Book> list(Pageable pageable) {
-        return bookRepository.findAll(pageable);
+    public Page<Book> list(User user, Pageable pageable) {
+        return bookRepository.findAllByOwner(user, pageable);
     }
 
     public int count() {
@@ -93,7 +96,10 @@ public class BookService {
 //        return result.size();
 //    }
 
-    public List<Book> getBooks() {
-        return bookRepository.findAll();
+    public List<Book> getBooks(User user) {
+        if (user.getRoles().equals(Role.ADMIN)){
+            return bookRepository.findAll();
+        }
+        return bookRepository.findAllByOwner(user);
     }
 }
