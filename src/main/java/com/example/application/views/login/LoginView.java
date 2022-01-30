@@ -24,7 +24,7 @@ public class LoginView extends LoginOverlay {
         setI18n(i18n);
 
         setForgotPasswordButtonVisible(true);
-        addForgotPasswordListener(e -> UI.getCurrent().navigate("create-count"));
+        addForgotPasswordListener(e -> UI.getCurrent().navigate("new-add-user"));
         setOpened(true);
     }
 

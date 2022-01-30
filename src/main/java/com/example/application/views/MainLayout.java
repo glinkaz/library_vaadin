@@ -81,6 +81,7 @@ public class MainLayout extends AppLayout {
         if (maybeUser.isPresent()) {
             User user = maybeUser.get();
 
+            //TODO
             Avatar avatar = new Avatar(user.getName(), user.getProfilePictureUrl());
             avatar.addClassNames("me-xs");
 

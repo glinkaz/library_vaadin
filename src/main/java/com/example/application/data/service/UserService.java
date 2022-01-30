@@ -1,6 +1,9 @@
 package com.example.application.data.service;
 
+import com.example.application.data.Role;
 import com.example.application.data.entity.User;
+
+import java.util.Collections;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -24,6 +27,11 @@ public class UserService {
         return repository.save(entity);
     }
 
+    public User save(User entity) {
+        entity.setRoles(Collections.singleton(Role.USER));
+        return repository.save(entity);
+    }
+
     public void delete(Integer id) {
         repository.deleteById(id);
     }
@@ -34,6 +42,10 @@ public class UserService {
 
     public int count() {
         return (int) repository.count();
+    }
+
+    public boolean userExists(String username){
+        return repository.findByUsername(username) != null;
     }
 
 }
