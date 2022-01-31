@@ -122,7 +122,7 @@ public class AddBookView extends LitTemplate {
                     User user = maybeUser.get();
                     book.setOwner(user);
                 }
-                bookService.update(book);
+                bookService.save(book);
                 clearForm();
                 Notification.show("SampleBook details stored.");
                 UI.getCurrent().navigate(NewLibraryView.class);

@@ -31,12 +31,12 @@ public class BookService {
         return bookRepository.save(entity);
     }
 
-    public Book save(User user, Book entity) {
+    public Book save(Book entity) {
         //if exists - dont update book
 //        if (bookRepository.exists(entity)){
 //            throw new IllegalArgumentException("Book exists in library");
 //        }
-        entity.setOwner(user);
+//        entity.setOwner(user);
         return bookRepository.save(entity);
     }
 

@@ -7,6 +7,7 @@ import com.example.application.security.AuthenticatedUser;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -95,14 +96,6 @@ public class NewLibraryView extends LitTemplate implements HasStyle, BeforeEnter
                 return editButton;
             }).setWidth("150px").setFlexGrow(0);
 
-            grid.addColumn(
-                    new ComponentRenderer<>(Button::new, (button, bookButton) -> {
-                        button.addThemeVariants(ButtonVariant.LUMO_ICON,
-                                ButtonVariant.LUMO_ERROR,
-                                ButtonVariant.LUMO_TERTIARY);
-                        button.addClickListener(e -> this.removeBook(bookButton));
-                        button.setIcon(new Icon(VaadinIcon.TRASH));
-                    })).setHeader("Manage");
 
 
             grid.setItems(query -> bookService.getBooks(user)
@@ -112,11 +105,28 @@ public class NewLibraryView extends LitTemplate implements HasStyle, BeforeEnter
             grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
             grid.asSingleSelect().addValueChangeListener(event -> {
                 //todo when selected item
-                Notification notification = Notification.show("Clicked item!");
+//                Notification notification = Notification.show("Clicked item!");
             });
 
             List<Book> books = bookService.getBooks(user);
             GridListDataView<Book> dataView = grid.setItems(books);
+            grid.addColumn(
+                    new ComponentRenderer<>(Button::new, (button, bookButton) -> {
+                        button.addThemeVariants(ButtonVariant.LUMO_ICON,
+                                ButtonVariant.LUMO_ERROR,
+                                ButtonVariant.LUMO_TERTIARY);
+                        button.addClickListener(e -> {
+                            this.removeBook(bookButton);
+//                            grid.setItems(bookService.getBooks(user));
+//                            dataView.refreshAll();
+//                            grid.getListDataView().refreshAll();
+                            UI.getCurrent().getPage().reload();  //dziala
+                            Notification.show("removed book: " + bookButton.getName());
+                        });
+                        button.setIcon(new Icon(VaadinIcon.TRASH));
+//                        UI.getCurrent().getPage().reload();
+//                        grid.getListDataView().refreshAll();
+                    })).setHeader("Manage");
 
             borrowedComboBox.setAllowCustomValue(true);
             borrowedComboBox.setItems("All", "Borrowed", "Not Borrowed");
@@ -181,6 +191,7 @@ public class NewLibraryView extends LitTemplate implements HasStyle, BeforeEnter
                 log.info("Zuzia - editor - " + editor.getItem().getBorrowed());
                 Book saveBook = editor.getItem();
                 saveBook.setBorrowed(borrowedField.getValue());
+                saveBook.setTags(tagsField.getValue());
                 log.info("Zuzia - Save button - " + borrowedField.getValue());
                 bookService.update(saveBook);
                 log.info("Zuzia - New Book object - " + saveBook.toString());
@@ -223,7 +234,7 @@ public class NewLibraryView extends LitTemplate implements HasStyle, BeforeEnter
         if (book == null)
             return;
         bookService.delete(book.getId());
-        this.refreshGrid();
+//        this.refreshGrid();
     }
 
 
