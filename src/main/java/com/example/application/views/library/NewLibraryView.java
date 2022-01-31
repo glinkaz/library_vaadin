@@ -80,10 +80,11 @@ public class NewLibraryView extends LitTemplate implements HasStyle, BeforeEnter
             grid.addColumn(Book::getName, "name").setHeader("Name").setAutoWidth(true);
             grid.addColumn(Book::getAuthor, "author").setHeader("Author").setAutoWidth(true).setSortable(true);
             grid.addColumn(Book::getPublicationDate, "publicationDate").setHeader("Publication Date").setAutoWidth(true).setSortable(true);
-            grid.addColumn(Book::getPages, "pages").setHeader("Pages").setComparator((p1, p2) -> p1.getPages() - p2.getPages()).setAutoWidth(true).setSortable(true);
             grid.addColumn(Book::getIsbn, "isbn").setHeader("Isbn").setAutoWidth(true).setSortable(true);
-            Grid.Column<Book> borrowedColumn = grid.addColumn(Book::getBorrowed, "borrowed").setHeader("Borrowed").setAutoWidth(true).setSortable(true);
-            Grid.Column<Book> tagsColumn = grid.addColumn(Book::getTags, "tags").setHeader("Tags").setAutoWidth(true).setSortable(true);
+            grid.addColumn(Book::getPages, "pages").setHeader("Pages").setComparator((p1, p2) -> p1.getPages() - p2.getPages()).setAutoWidth(true).setSortable(true);
+            Grid.Column<Book> currentPageColumn = grid.addColumn(Book::getCurrentPage, "currentPage").setHeader("Current Page").setAutoWidth(true).setSortable(true);
+            Grid.Column<Book> borrowedColumn = grid.addColumn(Book::getBorrowed, "borrowed").setHeader("Borrowed").setAutoWidth(true).setSortable(false);
+            Grid.Column<Book> tagsColumn = grid.addColumn(Book::getTags, "tags").setHeader("Tags").setAutoWidth(false).setSortable(false);
             Grid.Column<Book> editColumn = grid.addComponentColumn(person -> {
                 Button editButton = new Button("Edit");
                 editButton.addClickListener(e -> {
@@ -162,9 +163,10 @@ public class NewLibraryView extends LitTemplate implements HasStyle, BeforeEnter
                 boolean matchesPages = matchesTerm(book.getPages().toString(), searchTerm);
                 boolean matchesBorrowed = matchesTerm(book.getBorrowed(), searchTerm);
                 boolean matchesTags = matchesTerm(book.getTags(), searchTerm);
+                boolean matchesCurrentPage = matchesTerm(book.getCurrentPage(), searchTerm);
 
                 return matchesName || matchesAuthor || matchesIsbn || matchesPublicationDate || matchesPages
-                        || matchesBorrowed || matchesTags;
+                        || matchesBorrowed || matchesTags || matchesCurrentPage;
 
             });
 
@@ -187,12 +189,19 @@ public class NewLibraryView extends LitTemplate implements HasStyle, BeforeEnter
                     .bind(Book::getTags, Book::setTags);
             tagsColumn.setEditorComponent(tagsField);
 
+            TextField currentPageField = new TextField();
+            currentPageField.setWidthFull();
+            binder.forField(currentPageField)
+                    .bind(Book::getCurrentPage, Book::setCurrentPage);
+            currentPageColumn.setEditorComponent(currentPageField);
+
             Button saveButton = new Button("Save", e -> {
                 log.info("Zuzia - editor - " + editor.getItem().getBorrowed());
                 Book saveBook = editor.getItem();
                 saveBook.setBorrowed(borrowedField.getValue());
                 saveBook.setTags(tagsField.getValue());
-                log.info("Zuzia - Save button - " + borrowedField.getValue());
+                saveBook.setCurrentPage(currentPageField.getValue());
+                log.info("Zuzia - Save button - " + currentPageField.getValue());
                 bookService.update(saveBook);
                 log.info("Zuzia - New Book object - " + saveBook.toString());
                 editor.save();

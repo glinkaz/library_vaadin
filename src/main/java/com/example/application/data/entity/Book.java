@@ -16,6 +16,7 @@ public class Book extends AbstractEntity {
     private String author;
     private LocalDate publicationDate;
     private Integer pages;
+    private String currentPage;
     private String isbn;
     private String borrowed;
     private String tags;
@@ -103,6 +104,12 @@ public class Book extends AbstractEntity {
     }
     public void setOwner(User owner) {
         this.owner = owner;
+    }
+    public String getCurrentPage() {
+        return currentPage;
+    }
+    public void setCurrentPage(String currentPage) {
+        this.currentPage = currentPage;
     }
 
     @Override

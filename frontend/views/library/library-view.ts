@@ -33,7 +33,8 @@ export class LibraryView extends LitElement {
             ><vaadin-text-field label="Author" id="author"></vaadin-text-field
             ><vaadin-date-picker label="Publication date" id="publicationDate"></vaadin-date-picker
             ><vaadin-text-field label="Pages" id="pages"></vaadin-text-field
-            ><vaadin-text-field label="Isbn" id="isbn"></vaadin-text-field>
+          ><vaadin-text-field label="Current Page" id="currentPage"></vaadin-text-field
+          ><vaadin-text-field label="Isbn" id="isbn"></vaadin-text-field>
             <vaadin-text-field label="Search" id="searchField"></vaadin-text-field>
           </vaadin-form-layout>
         </div>
